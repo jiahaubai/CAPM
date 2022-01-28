@@ -10,10 +10,16 @@ This repository is used for verifying the maxpool-based CNN.
   * torchvision == 0.9.0
   * psutil == 5.7.2
   * pandas == 1.1.3
-  * onnx == 1.8.1
-  * onnxruntime == 1.7.0
   
 * These packages can be automatically installed by typing: 
   ```
   pip3 install requirements.txt
   ```
+
+## Usage
+  ```
+  python my_verify_stride.py [input the net]
+  ```
+  There are 4 net can be chosen :
+  
+  * ``` mnist ``` :
