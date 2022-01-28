@@ -132,7 +132,7 @@ if str(sys.argv[1]) == 'mnist':
     preprocess = preprocess_mnist
 
     net = smallNet()
-    pth_file = 'mnist_maxpool_best.pth'
+    pth_file = 'parameter/mnist_maxpool_best.pth'
 
 elif str(sys.argv[1]) == 'variant_mnist':
     print('YES variant_mnist')
@@ -141,7 +141,7 @@ elif str(sys.argv[1]) == 'variant_mnist':
     preprocess = preprocess_mnist
 
     net = variant_smallNet()
-    pth_file = 'mnist_stride_best.pth'
+    pth_file = 'parameter/mnist_stride_best.pth'
 
 elif str(sys.argv[1]) == 'cifar10':
     print('Yes cifar10')
@@ -150,7 +150,7 @@ elif str(sys.argv[1]) == 'cifar10':
     preprocess = preprocess_cifar
 
     net = largeNet()
-    pth_file = 'cifar10_maxpool_best.pth'
+    pth_file = 'parameter/cifar10_maxpool_best.pth'
 
 elif str(sys.argv[1]) == 'variant_cifar10':
     print('Yes cifar10')
@@ -159,7 +159,7 @@ elif str(sys.argv[1]) == 'variant_cifar10':
     preprocess = preprocess_cifar
 
     net = variant_largeNet()
-    pth_file = 'cifar10_stride_best.pth'
+    pth_file = 'parameter/cifar10_stride_best.pth'
 
 
 print('file path:',file_path)
