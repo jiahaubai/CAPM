@@ -20,7 +20,7 @@ This repository is used for verifying the maxpool-based CNN.
   ```
   python my_verify_stride.py [input the net]
   ```
-  There are 4 nets can be chosen : ```smallNet, variant_smallNet, largeNet, variant_largeNet```. The difference between original nets, e.g., smallNet, and variant nets, e.g., variant_smallNet, is the setting of maxpool. In original net, kernel size and stride should be equal; however, in variant net, the kernel size and stride are without any restrictions.
+  There are 4 nets can be chosen : ```smallNet, variant_smallNet, largeNet, variant_largeNet```. The difference between original nets, e.g., smallNet, and variant nets, e.g., variant_smallNet, is the setting of maxpool. In original net, kernel size and stride are set equally; however, in variant net, the kernel size and stride do not have any setting restrictions.
   
   * ```smallNet```  and  ```variant_smallNet``` : are trained on the MNIST dataset.
   * ```largeNet```  and  ```variant_smallNet``` : are trained on the CIFAR 10 dataset.
