@@ -12,9 +12,14 @@ import torch.utils.data as Data
 from torchvision import transforms
 import pandas as pd
 import torch.optim as optim
-
+import argparse
 from utils_mnist import (upper_limit, lower_limit, std, clamp, get_loaders,
     evaluate_pgd, evaluate_standard, evaluate_fgsm)
+
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--net', default='normal', type=int, help='normal / fgsm / pgd training')
+    return parser.parse_args()
 
 # model
 AlexNet_Model = torch.hub.load(
@@ -79,7 +84,14 @@ testloader = DataLoader(
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
  
 
-model_path = '../parameter/alex_normal_mnist.pth'
+t = get_args.net
+if t == 'fgsm':
+    model_path = '../parameter/alex_fgsm_mnist.pth'
+elif t == 'pgd':
+    model_path = '../parameter/alex_pgd_mnist.pth'
+else:
+    model_path = '../parameter/alex_normal_mnist.pth'
+
 
 print('Start testing')
 print('Start testing FGSM attacked Images')
