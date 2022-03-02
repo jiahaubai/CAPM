@@ -37,42 +37,13 @@ val_size = 5000
 train_size = len(train_data) - val_size
 train_ds, val_ds = random_split(train_data, [train_size, val_size])
 
-# use same dataset (first 100 of Cifar10 test)
-df = pd.read_csv('../data/mnist_test.csv')
-data = df.iloc[:100, 1:].values.astype(float)
-label = df.iloc[:100, 0].values
-
-data_tensor = torch.from_numpy(data).float().view(
-    len(data), -1, 28, 28)  # -------------------------------------------
-target_tensor = torch.from_numpy(label).long()
-
-
-class testset(Dataset):
-    def __init__(self, data_tensor, target_tensor, loader=transform_test):
-        self.data_tensor = data_tensor
-        self.target_tensor = target_tensor
-        self.loader = loader
-
-    def __getitem__(self, index):
-        data = self.data_tensor[index] / 255
-        data = self.loader(data)
-        target = self.target_tensor[index]
-        return data, target
-
-    def __len__(self):
-        return self.data_tensor.size()[0]
-
-
-test_ds = testset(data_tensor, target_tensor)
 
 batch_size = 4
 trainloader = DataLoader(train_ds, batch_size, shuffle=True, num_workers=2)
 valloader = DataLoader(val_ds, batch_size, num_workers=2)
-testloader = DataLoader(
-    test_ds, shuffle=False, batch_size=4, num_workers=2)
 
 print('Succefully load data, size of train, val, test are',
-      len(train_ds), len(val_ds), len(test_ds))
+      len(train_ds), len(val_ds), 100)
 
 # Use the AlexNet Pretrained model
 AlexNet_Model = torch.hub.load(
@@ -127,6 +98,7 @@ for epoch in range(epoches):  # loop over the dataset multiple times
     model.train()
 
     for i, data in enumerate(trainloader, 0):
+        print(labels)
         inputs, labels = data[0].to(device), data[1].to(device)
         optimizer.zero_grad()
         output = model(inputs)
@@ -162,26 +134,4 @@ for epoch in range(epoches):  # loop over the dataset multiple times
             best_acc = val_acc
             torch.save(model.state_dict(), model_path)
             print('saving model with acc {:.3f}'.format(best_acc/len(val_ds)))
-print('Finished training of AlexNet, model save at CAPM/parameter/', model_path, sep = '')
-
-
-print('Start testing')
-print('Start testing FGSM attacked Images')
-model_test = nn.Sequential(*tmp0, nn.MaxPool2d(kernel_size=1),
-                      *tmp1, nn.MaxPool2d(kernel_size=1), *tmp2, Flatten(), *tmp3)
-
-model_test.load_state_dict(torch.load(model_path))
-model_test.eval()
-
-epsilon = (0.01)
-epsilon = torch.tensor(epsilon).view(1, 1, 1).to(device)
-
-print('starting test standard acc')
-test_loss, test_acc = evaluate_standard(testloader, model_test, )
-print('acc: ', 100*test_acc, '%', sep = '')
-print('starting fgsm acc')
-fgsm_loss, fgsm_acc = evaluate_fgsm(testloader, model_test, 50, 10, epsilon)
-print('acc: ', 100*fgsm_acc, '%', sep = '')
-print('starting pgd acc')
-pgd_loss, pgd_acc = evaluate_pgd(testloader, model_test, 20, 10, epsilon)
-print('acc: ', 100*pgd_acc, '%', sep = '')
+print('Finished training of AlexNet, model save at CAPM/parameter/', './parameter/' + model_path, sep = '')
