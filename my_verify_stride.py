@@ -17,6 +17,7 @@ import psutil
 from PIL import Image
 import pandas as pd
 import torch.utils.data as Data
+import argparse
 
 preprocess_mnist = transforms.Compose([
     transforms.Normalize((0.5,), (0.5,)) #--------------------------------------------
@@ -26,6 +27,10 @@ preprocess_cifar = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # ------------------------
 ])
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--architecture', default='smallNet', help='smallNet/variant_smallNet/largeNet/variant_largeNet', type=str)
+    return parser.parse_args()
 
 class Flatten(nn.Module):
     def forward(self, input):
@@ -123,9 +128,10 @@ class variant_largeNet(nn.Module):
     def forward(self, input):
         return self.main(input)
 
+args = get_args()
 
 N = 0
-if str(sys.argv[1]) == 'mnist':
+if args.architecture == 'mnist':
     print('YES mnist')
     N = 28
     file_path = 'data/mnist_test.csv'
@@ -134,7 +140,7 @@ if str(sys.argv[1]) == 'mnist':
     net = smallNet()
     pth_file = 'parameter/mnist_maxpool_best.pth'
 
-elif str(sys.argv[1]) == 'variant_mnist':
+elif args.architecture == 'variant_mnist':
     print('YES variant_mnist')
     N = 28
     file_path = 'data/mnist_test.csv'
@@ -143,7 +149,7 @@ elif str(sys.argv[1]) == 'variant_mnist':
     net = variant_smallNet()
     pth_file = 'parameter/mnist_stride_best.pth'
 
-elif str(sys.argv[1]) == 'cifar10':
+elif args.architecture == 'cifar10':
     print('Yes cifar10')
     N = 32
     file_path = 'data/cifar10_test.csv'
@@ -152,7 +158,7 @@ elif str(sys.argv[1]) == 'cifar10':
     net = largeNet()
     pth_file = 'parameter/cifar10_maxpool_best.pth'
 
-elif str(sys.argv[1]) == 'variant_cifar10':
+elif args.architecture == 'variant_cifar10':
     print('Yes cifar10')
     N = 32
     file_path = 'data/cifar10_test.csv'
