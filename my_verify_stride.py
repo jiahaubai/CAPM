@@ -12,11 +12,13 @@ import torch
 import random
 import time
 import gc
-import sys
 import psutil
 from PIL import Image
 import pandas as pd
 import torch.utils.data as Data
+import argparse
+import importlib
+import os
 
 preprocess_mnist = transforms.Compose([
     transforms.Normalize((0.5,), (0.5,)) #--------------------------------------------
@@ -26,6 +28,15 @@ preprocess_cifar = transforms.Compose([
     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # ------------------------
 ])
 
+def get_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--net', default='smallNet', help='smallNet/variant_smallNet/largeNet/variant_largeNet or path to net file', type=str)
+    parser.add_argument('--custom_class_name', default='', help='class name of the custom model', type=str)
+    parser.add_argument('--pth_file', default='parameter/mnist_maxpool_best.pth', help='path to stored model', type=str)
+    parser.add_argument('--epsilon', default=0.0, help='epsilon value of attack', type=float)
+    parser.add_argument('--data', default='mnist', choices=['mnist', 'cifar10', 'svhn'], help='mnist/cifar10/svhn', type=str)
+    parser.add_argument('-d', '--debug',  action = 'store_true')
+    return parser.parse_args()
 
 class Flatten(nn.Module):
     def forward(self, input):
@@ -123,44 +134,155 @@ class variant_largeNet(nn.Module):
     def forward(self, input):
         return self.main(input)
 
+class convSmall(nn.Module):
+    def __init__(self):
+        super(convSmall, self).__init__()
+        self.main = nn.Sequential(
+            # ConvSmall (MNIST our)
+            nn.Conv2d(1, 16, 4, stride = 2, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(16, 32, 4, stride = 2, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            Flatten(),
+
+            nn.Linear(800, 100), 
+            nn.ReLU(),
+            nn.Linear(100, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
+class convMed(nn.Module):
+    def __init__(self):
+        super(convMed, self).__init__()
+        self.main = nn.Sequential(
+            # ConvMed (MNIST our)
+            nn.Conv2d(1, 16, 2, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(16, 32, 2, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            Flatten(),
+
+            nn.Linear(1568, 100), 
+            nn.ReLU(),
+            nn.Linear(100, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
+
+class convSmallCIFAR10(nn.Module):
+    def __init__(self):
+        super(convSmallCIFAR10, self).__init__()
+        self.main = nn.Sequential(
+            nn.Conv2d(3, 16, 4, stride = 2, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(16, 32, 4, stride = 2, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            Flatten(),
+
+            nn.Linear(1152, 100), 
+            nn.ReLU(),
+            nn.Linear(100, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
+class convSuperCIFAR10(nn.Module):
+    def __init__(self):
+        super(convSuperCIFAR10, self).__init__()
+        self.main = nn.Sequential(
+            nn.Conv2d(3, 32, 3, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(32, 32, 4, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(32, 64, 3, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(64, 64, 4, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            Flatten(),
+
+            nn.Linear(30976, 512), 
+            nn.ReLU(),
+
+            nn.Linear(512, 512), 
+            nn.ReLU(),
+
+            nn.Linear(512, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
+
+
+args = get_args()
 
 N = 0
-if str(sys.argv[1]) == 'mnist':
-    print('YES mnist')
+
+if args.data == 'mnist':
     N = 28
     file_path = 'data/mnist_test.csv'
     preprocess = preprocess_mnist
+elif args.data == 'cifar10':
+    N = 32
+    file_path = 'data/cifar10_test.csv'
+    preprocess = preprocess_cifar
+elif args.data == 'svhn':
+    print('XXX: not done yet')
+    pass
+    
 
+
+if args.net == 'smallNet':
     net = smallNet()
     pth_file = 'parameter/mnist_maxpool_best.pth'
-
-elif str(sys.argv[1]) == 'variant_mnist':
-    print('YES variant_mnist')
-    N = 28
-    file_path = 'data/mnist_test.csv'
-    preprocess = preprocess_mnist
-
+elif args.net == 'variant_smallNet':
     net = variant_smallNet()
     pth_file = 'parameter/mnist_stride_best.pth'
-
-elif str(sys.argv[1]) == 'cifar10':
-    print('Yes cifar10')
-    N = 32
-    file_path = 'data/cifar10_test.csv'
-    preprocess = preprocess_cifar
-
+elif args.net == 'largeNet':
     net = largeNet()
     pth_file = 'parameter/cifar10_maxpool_best.pth'
-
-elif str(sys.argv[1]) == 'variant_cifar10':
-    print('Yes cifar10')
-    N = 32
-    file_path = 'data/cifar10_test.csv'
-    preprocess = preprocess_cifar
-
+elif args.net == 'variant_largeNet':
     net = variant_largeNet()
     pth_file = 'parameter/cifar10_stride_best.pth'
-
+elif args.net == 'convSmall':
+    net = convSmall()
+    pth_file = args.pth_file
+elif args.net == 'convMed':
+    net = convMed()
+    pth_file = args.pth_file
+elif args.net == 'convSmallCIFAR10':
+    net = convSmallCIFAR10()
+    pth_file = args.pth_file
+# else:  # custom net
+#     mo = importlib.import_module(args.net.replace('.py', ''))
+#     mo = getattr(mo, args.custom_class_name)
+#     net = mo()
+#     pth_file = args.pth_file
 
 print('file path:',file_path)
 print('N:',N)
@@ -201,7 +323,7 @@ print('Label tensor in each batch:', labels.shape, labels.dtype)
 print('len:',len(TestSet))
 
 
-print(images[0][0][0][:10])
+# print(images[0][0][0][:10])
 
 
 print('pth_file:',pth_file)
@@ -281,10 +403,17 @@ def get_bar_u_l(lR, uR, reshape_size, kernel_size_M, stride_M):
     
     pixels_len = kernel_size_M * kernel_size_M # 每次kernel經過的pixel數
     
+    print('input shape:', uR.size())
+    print('uR:\n',uR[:,:5,:])
+    print('lR:\n',lR[:,:5,:])
+
     for idx in range(pixels_len):
         l_bar = lR[:,:,idx] - uM
         u_bar = uR[:,:,idx] - lM
         
+        # print('each u_bar shape:', u_bar.size())
+        # print('each u_bar:',u_bar[:,:5])
+
         L_bar_bds.append(l_bar)
         U_bar_bds.append(u_bar)
         
@@ -308,13 +437,189 @@ def get_bar_u_l(lR, uR, reshape_size, kernel_size_M, stride_M):
     ### use for test maxpool layer's upper/lower bound
     LM_bds.append(lM)
     UM_bds.append(uM)
+
+    # print('output shape:',U_bar.shape)
+    # print('part of output:\n',U_bar[:,:,:5])
+    # print('\n')
+
+    print('original U_bar size:',U_bar.size())
+    print('original U_bar size:\n',U_bar[:,:,:5])
+    print('original L_bar size:\n',L_bar[:,:,:5])
+
+    return U_bar, L_bar, L_, U_
+
+def iter_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
+
+    lR = lR.contiguous().view(*reshape_size)
+    uR = uR.contiguous().view(*reshape_size)
+    
+    # permute the pixels which using for max-pool
+    uR, lR, unfold_shape = premute_pixels(lR, uR, kernel_size_M, stride_M)
+    
+    n = lR.size(1)
+    lM = torch.zeros(1,n)
+    uM = torch.zeros(1,n)
+    
+    L_bar_bds = []
+    U_bar_bds = []    
+    
+    pixels_len = kernel_size_M * kernel_size_M # 每次kernel經過的pixel數
+
+    # print('input shape:', uR.size())
+    # print('uR:\n',uR[:,2690:,:])
+    # print('lR:\n',lR[:,2690:,:])
+
+    for idx in range(pixels_len):
+        
+        # print('idx:',idx)
+        # print('uM;\n',uM[:,2690:])
+        # print('lM;\n',uM[:,2690:])
+
+        # step 1
+        l_bar = lR[:,:,idx] - uM
+        u_bar = uR[:,:,idx] - lM
+
+        L_bar_bds.append(l_bar)
+        U_bar_bds.append(u_bar)
+
+        
+        # step 2
+        I_u0 = (u_bar <= 0).detach().float()
+        I_l0 = (l_bar < 0).detach().float()
+        I_l0u = ((l_bar < 0).detach() * (u_bar > 0).detach()).float()
+        I_0l = (l_bar >= 0).detach().float()
+        
+        a = u_bar/(u_bar - l_bar)
+        b = - (l_bar*u_bar)/(u_bar - l_bar)
+        a[a != a] = 0
+        b[b != b] = 0
+
+        check_inf_a = torch.isinf(a)
+        check_inf_b = torch.isinf(b)
+        a[check_inf_a] = 0
+        b[check_inf_b] = 0
+        
+        # print('I_u0:',I_u0[:,2690:])
+        # print('I_l0:',I_l0[:,2690:])
+        # print('I_l0u:',I_l0u[:,2690:])
+        # print('I_0l:',I_0l[:,2690:])
+        # print('a:',a[:,2690:])
+        # print('b:',b[:,2690:])
+
+        uM = uM*I_u0 + ( (1-a)*uM + a*uR[:,:,idx] + b )*I_l0u + uR[:,:,idx]*I_0l
+        lM = lM*I_l0 + lR[:,:,idx]*I_0l
+
+    
+    L_bar = torch.stack(L_bar_bds, dim = 0)
+    U_bar = torch.stack(U_bar_bds, dim = 0)
+    
+    # print('iter U_bar:',U_bar[:,:,2690:])
+    # print('iter L_bar:',L_bar[:,:,2690:])
+
+    return U_bar, L_bar
+
+
+def get_uM_lM(new_uR, new_lR):
+    
+    u_bar = (new_uR[:,0] - new_lR[:,1])
+    l_bar = (new_lR[:,0] - new_uR[:,1])
+
+    m = nn.ReLU()
+
+    uM = (m(u_bar) + new_uR[:,1]).unsqueeze(0)
+    lM = (m(l_bar) + new_lR[:,1]).unsqueeze(0)
+
+    return uM, lM
+
+def tighter_get_bar_u_l(lR, uR, reshape_size, kernel_size_M, stride_M):
+    
+    lR = lR.contiguous().view(*reshape_size)
+    uR = uR.contiguous().view(*reshape_size)
+    
+    # permute the pixels which using for max-pool
+    uR, lR, unfold_shape = premute_pixels(lR, uR, kernel_size_M, stride_M)
+    
+    n = lR.size(1)
+    lM = torch.zeros(1,n)
+    uM = torch.zeros(1,n)
+    
+    L_bar_bds = []
+    U_bar_bds = []
+    
+    L_bds = []
+    U_bds = []
+    
+    print('input shape:', uR.size())
+    # print('uR:\n',uR[:,:5,:])
+    # print('lR:\n',lR[:,:5,:])
+
+    batch_size = uR.size(0)
+    blocks = uR.size(1)
+    compare_compoments = uR.size(2)
+    
+
+    for idx in range(2): # <---------------- range update to 2
+        l_bar = lR[:,:,idx] - uM
+        u_bar = uR[:,:,idx] - lM
+        
+        # print('each u_bar shape:', u_bar.size())
+        # print('each u_bar:',u_bar[0][:5])
+
+        L_bar_bds.append(l_bar)
+        U_bar_bds.append(u_bar)
+        
+        # get l', u'
+        l_ = (l_bar > 0).detach().type_as(l_bar) * l_bar
+        u_ = (u_bar > 0).detach().type_as(u_bar) * u_bar
+        
+        L_bds.append(l_)
+        U_bds.append(u_)
+        
+        # get new lM, uM
+        lM = lM + l_
+        uM = uM + u_
+    
+    # <---------------------------------- add another for here. Note we should append the new ubar & lbar
+
+    for idx in range(2,compare_compoments):
+    
+        max_idx = torch.max(uR[:,:,:idx], 2).indices
+        min_idx = torch.min(lR[:,:,:idx], 2).indices
+
+        # print(max_idx)
+        # print(min_idx)
+        
+        uR_max_tensor = torch.stack([uR[:,i,j] for i,j in zip(torch.arange(0, blocks), max_idx[0])])
+        uR_min_tensor = torch.stack([uR[:,i,j] for i,j in zip(torch.arange(0, blocks), min_idx[0])])
+
+        lR_max_tensor = torch.stack([lR[:,i,j] for i,j in zip(torch.arange(0, blocks), max_idx[0])])
+        lR_min_tensor = torch.stack([lR[:,i,j] for i,j in zip(torch.arange(0, blocks), min_idx[0])])
+
+        new_uR = torch.cat((uR_max_tensor,uR_min_tensor),1)
+        new_lR = torch.cat((lR_max_tensor,lR_min_tensor),1)
+        
+        new_uM, new_lM = get_uM_lM(new_uR, new_lR)
+        u_bar = uR[:,:,idx] - new_lM
+        l_bar = lR[:,:,idx] - new_uM
+        
+        L_bar_bds.append(l_bar)
+        U_bar_bds.append(u_bar)
+    
+    L_bar = torch.stack(L_bar_bds, dim = 0)
+    U_bar = torch.stack(U_bar_bds, dim = 0)
+    
+    L_ = torch.stack(L_bds, dim = 0) 
+    U_ = torch.stack(U_bds, dim = 0) 
+
+    print('tighter U_bar size:\n',U_bar[:,:,:5])
+    print('tighter L_bar size:\n',L_bar[:,:,:5])
     
     return U_bar, L_bar, L_, U_
 
 new_LM = []
 new_UM = []
 
-def new_get_bar_u_l(lR, uR, reshape_size, kernel_size_M):
+def new_get_bar_u_l(lR, uR, reshape_size, kernel_size_M, stride_M):
     
     new_LM_bds = []
     new_UM_bds = []
@@ -323,7 +628,7 @@ def new_get_bar_u_l(lR, uR, reshape_size, kernel_size_M):
     uR = uR.contiguous().view(*reshape_size)
     
     # permute the pixels which using for max-pool
-    uR, lR, unfold_shape = premute_pixels(lR, uR, kernel_size_M)
+    uR, lR, unfold_shape = premute_pixels(lR, uR, kernel_size_M, stride_M)
     
     UR = uR.permute(0,2,1).squeeze(0)
     LR = lR.permute(0,2,1).squeeze(0)
@@ -374,6 +679,9 @@ def new_get_bar_u_l(lR, uR, reshape_size, kernel_size_M):
     
     new_LM.append( torch.stack(new_LM_bds, dim = 0).unsqueeze(0) )
     new_UM.append( torch.stack(new_UM_bds, dim = 0).unsqueeze(0)  )
+
+    print('random U_bar size:\n',U_Bar[:,:,:5])
+    print('random L_bar size:\n',L_Bar[:,:,:5])
     
     return U_Bar, L_Bar, L_, U_
 
@@ -565,14 +873,16 @@ def get_upper_lower(x, epsilon, model, out_layer_size,
             
             # count max_pool_term
             bar_I = ((bar_Upper[pos_bar_U] > 0).detach() * (bar_Lower[pos_bar_L] < 0).detach()).float()
-            
+
+
             upper_max_pool_term.append( torch.sum( bar_Lower[pos_bar_L]*(bar_I*kappa_hat).clamp(0), (3,2,1) ).detach() )
             lower_max_pool_term.append( torch.sum( bar_Lower[pos_bar_L]*(-1*bar_I*kappa_hat).clamp(0), (3,2,1)).detach()) 
             
+
             pos_bar_U -= 1
             pos_bar_L -= 1
             pos_bar_d -= 1
-            
+
             del kappa_hat
             del Kappa_orig
             gc.collect()
@@ -626,7 +936,6 @@ def get_upper_lower(x, epsilon, model, out_layer_size,
     else:
         upper = sum(nu_b) + nu_x[-1] + epsilon*l1[-1] - sum(upper_relu_term) - sum(upper_max_pool_term)
         lower = sum(nu_b) + nu_x[-1] - epsilon*l1[-1] + sum(lower_relu_term) + sum(lower_max_pool_term)
-    
 
     del nu
     del nu_b 
@@ -685,8 +994,10 @@ def collect_all_upper_lower(model, x, y, epsilon):
                                                D, lower_bds, upper_bds, 
                                                D_bar,bar_lower_bds, bar_upper_bds)
 
+
             lower_bds.append(lower.detach())
             upper_bds.append(upper.detach())
+
             
             del lower
             del upper
@@ -709,10 +1020,22 @@ def collect_all_upper_lower(model, x, y, epsilon):
             kM = layer.kernel_size
             sM = layer.stride
             # loose method find upper lower
-            u_bar, l_bar, _, _ = get_bar_u_l(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+            #u_bar, l_bar, _, _ = get_bar_u_l(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+            #print('iter u_bar size:',u_bar.size(), u_bar.dtype)
 
-            # real points find upper lower
-            #u_bar, l_bar, _, _ = new_get_bar_u_l(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM)
+            # tighter method find upper lower
+            #u_bar, l_bar, _, _ = tighter_get_bar_u_l(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+
+            #real points find upper lower
+            #u_bar, l_bar, _, _ = new_get_bar_u_l(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+            #print('real u_bar size:',u_bar.size())
+
+            # iterative method for finding upper lower
+            u_bar, l_bar = iter_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+
+            
+            #print('check u_bar nan:',torch.sum(torch.isnan(u_bar)))
+            #print('check l_bar nan:',torch.sum(torch.isnan(l_bar)))
 
             bar_upper_bds.append(u_bar)
             bar_lower_bds.append(l_bar)
@@ -720,10 +1043,17 @@ def collect_all_upper_lower(model, x, y, epsilon):
             u_ = u_bar.flatten().unsqueeze(0)
             l_ = l_bar.flatten().unsqueeze(0)
 
+            #print('u_:',u_)
+            #print('l_:',l_)
+
             d_bar = get_matrix_d(l_,u_).t()
             d_bar = d_bar.view(*(u_bar.size()))
-            D_bar.append(d_bar)
+
             
+
+            D_bar.append(d_bar)
+
+            #print('d_bar:',D_bar[-1])
             #print('**end f Maxpool:',(psutil.virtual_memory().used)/(10**9))
             
 
@@ -753,8 +1083,7 @@ for i in range(length):
 
     X = images[i].unsqueeze(0)
     Y = labels[i]
-    Epsilon = float(sys.argv[2])
-    print(i)
+    Epsilon = args.epsilon
     #print(X.view(784,-1)[200:300].view(10,10))
 
     #print('**start ----------:',(psutil.virtual_memory().used)/(10**9))
@@ -773,26 +1102,38 @@ for i in range(length):
 
         
     #print('objective:',objective)
-    print('Y:',Y)
-    print('acc:',acc)
-    print('time:',end-start)
     count_time += (end-start)
-    print('\n')
-    
+    if args.debug:
+        print(i)
+        print('Y:',Y)
+        print('acc:',acc)
+        print('time:',end-start)
+        print('\n')
+        print('ave time each img:',count_time/length)
     Lower_bds = None
     Upper_bds = None
     objective = None
     gc.collect()
-    print('ave time each img:',count_time/length)
     #print(acc/length)
     #print('**end ----------:',(psutil.virtual_memory().used)/(10**9))
 
+    # if i == 0:
+    #     break
+
 total_end = time.time()
 
-data_name = str(sys.argv[1])
+data_name = args.net.replace('.py', '')
+if not os.path.exists('stride_result'):
+    os.makedirs('stride_result')
 
-f = open('stride_result/'+data_name +'_stride_'+str(Epsilon)+'.txt','w')
+f = open('stride_result/'+data_name +'_stride_'+str(Epsilon)+'.txt','w+')
 f.write('total time : %f'%(total_end-total_start)+'  sec \n')
 f.write('ave time each img: %f'%(count_time/length)+'\n')
-f.write('verify acc: %f'%(acc/length))
+f.write('verify acc: %f\n'%(acc/length))
 f.close()
+print("===============================================================")
+print('epsilon =', Epsilon)
+print(pth_file)
+print('ave time each img:', (count_time/length))
+print('verify acc:', (acc/length))
+print("===============================================================")
