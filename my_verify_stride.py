@@ -506,8 +506,11 @@ def iter_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
         # print('a:',a[:,2690:])
         # print('b:',b[:,2690:])
 
-        uM = uM*I_u0 + ( (1-a)*uM + a*uR[:,:,idx] + b )*I_l0u + uR[:,:,idx]*I_0l
-        lM = lM*I_l0 + lR[:,:,idx]*I_0l
+        # uM = uM*I_u0 + ( (1-a)*uM + a*uR[:,:,idx] + b )*I_l0u + uR[:,:,idx]*I_0l
+        # lM = lM*I_l0 + lR[:,:,idx]*I_0l
+
+        uM = uM*I_l0 + uR[:,:,idx]*I_0l
+        lM = lM*I_u0 + ( (1-a)*lM + a*lR[:,:,idx] + b )*I_l0u + lR[:,:,idx]*I_0l
 
     
     L_bar = torch.stack(L_bar_bds, dim = 0)
