@@ -448,7 +448,55 @@ def get_bar_u_l(lR, uR, reshape_size, kernel_size_M, stride_M):
 
     return U_bar, L_bar, L_, U_
 
+def limit_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
+
+    lR = lR.contiguous().view(*reshape_size)
+    uR = uR.contiguous().view(*reshape_size)
+    
+    # permute the pixels which using for max-pool
+    uR, lR, unfold_shape = premute_pixels(lR, uR, kernel_size_M, stride_M)
+    
+    n = lR.size(1)
+    lM = torch.zeros(1,n)
+    uM = torch.zeros(1,n)
+    
+    L_bar_bds = []
+    U_bar_bds = []    
+
+    #print('origin lR size:', lR[:,100:110,])
+    
+    pixels_len = kernel_size_M * kernel_size_M # 每次kernel經過的pixel數
+
+    #print('maximun way')
+    for idx in range(pixels_len):
+
+        # step 1
+        l_bar = lR[:,:,idx] - uM
+        u_bar = uR[:,:,idx] - lM
+
+        L_bar_bds.append(l_bar)
+        U_bar_bds.append(u_bar)
+
+        #print('idx:',idx, ' ', lR[:,:,idx].size())
+
+        m = nn.MaxPool1d(idx+1, stride=pixels_len)
+        lM = m(lR).squeeze(0).t()
+        uM = m(uR).squeeze(0).t()
+
+        # if idx < 3:
+        #     print(idx+1,' uM:',uM[:,100:110])
+
+    
+    L_bar = torch.stack(L_bar_bds, dim = 0)
+    U_bar = torch.stack(U_bar_bds, dim = 0)
+    
+    # print('iter U_bar:',U_bar[:,:,2690:])
+    # print('iter L_bar:',L_bar[:,:,2690:])
+
+    return U_bar, L_bar
+
 def iter_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
+
 
     lR = lR.contiguous().view(*reshape_size)
     uR = uR.contiguous().view(*reshape_size)
@@ -465,10 +513,9 @@ def iter_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
     
     pixels_len = kernel_size_M * kernel_size_M # 每次kernel經過的pixel數
 
-    # print('input shape:', uR.size())
-    # print('uR:\n',uR[:,2690:,:])
-    # print('lR:\n',lR[:,2690:,:])
+    #print('uR:\n', uR[:,100:110,])
 
+    #print('iterative way')
     for idx in range(pixels_len):
         
         # print('idx:',idx)
@@ -498,19 +545,12 @@ def iter_get_bar_u_l_(lR, uR, reshape_size, kernel_size_M, stride_M):
         check_inf_b = torch.isinf(b)
         a[check_inf_a] = 0
         b[check_inf_b] = 0
-        
-        # print('I_u0:',I_u0[:,2690:])
-        # print('I_l0:',I_l0[:,2690:])
-        # print('I_l0u:',I_l0u[:,2690:])
-        # print('I_0l:',I_0l[:,2690:])
-        # print('a:',a[:,2690:])
-        # print('b:',b[:,2690:])
-
-        # uM = uM*I_u0 + ( (1-a)*uM + a*uR[:,:,idx] + b )*I_l0u + uR[:,:,idx]*I_0l
-        # lM = lM*I_l0 + lR[:,:,idx]*I_0l
 
         uM = uM*I_l0 + uR[:,:,idx]*I_0l
         lM = lM*I_u0 + ( (1-a)*lM + a*lR[:,:,idx] + b )*I_l0u + lR[:,:,idx]*I_0l
+
+        # if idx < 3:
+        #     print(idx+1, ' uM:',uM[:,100:110])
 
     
     L_bar = torch.stack(L_bar_bds, dim = 0)
@@ -1036,6 +1076,8 @@ def collect_all_upper_lower(model, x, y, epsilon):
             # iterative method for finding upper lower
             u_bar, l_bar = iter_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
 
+            # maximun way
+            u_bar, l_bar = limit_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
             
             #print('check u_bar nan:',torch.sum(torch.isnan(u_bar)))
             #print('check l_bar nan:',torch.sum(torch.isnan(l_bar)))
