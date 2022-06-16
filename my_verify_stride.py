@@ -1074,7 +1074,7 @@ def collect_all_upper_lower(model, x, y, epsilon):
             #print('real u_bar size:',u_bar.size())
 
             # iterative method for finding upper lower
-            u_bar, l_bar = iter_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
+            #u_bar, l_bar = iter_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
 
             # maximun way
             u_bar, l_bar = limit_get_bar_u_l_(lR_bds[-1], uR_bds[-1], out_layer_size[-2], kM, sM)
