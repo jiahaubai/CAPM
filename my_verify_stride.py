@@ -30,8 +30,7 @@ preprocess_cifar = transforms.Compose([
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--net', default='smallNet', help='smallNet/variant_smallNet/largeNet/variant_largeNet or path to net file', type=str)
-    parser.add_argument('--custom_class_name', default='', help='class name of the custom model', type=str)
+    parser.add_argument('--net', default='smallNet', help='smallNet/variant_smallNet/largeNet/variant_largeNet/convSmall/convMed/convBig/convSmallCIFAR10/convMedCIFAR10/convBigCIFAR10', type=str)
     parser.add_argument('--pth_file', default='parameter/mnist_maxpool_best.pth', help='path to stored model', type=str)
     parser.add_argument('--epsilon', default=0.0, help='epsilon value of attack', type=float)
     parser.add_argument('--mean', nargs='+', help='mean value of dataset', type=float)
@@ -331,7 +330,7 @@ class convSuperCIFAR10(nn.Module):
         x = self.main(x)
         return x
 
-
+# One can define his / her own network here
 
 args = get_args()
 
@@ -352,11 +351,6 @@ if args.data == 'mnist':
         transforms.Normalize(mean, std) #--------------------------------------------
     ])
     preprocess = preprocess_mnist
-# preprocess_cifar = transforms.Compose([
-#     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # ------------------------
-# ])
-
-
 elif args.data == 'cifar10':
     N = 32
     file_path = 'data/cifar10_test.csv'
@@ -407,12 +401,8 @@ elif args.net == 'convMedCIFAR10':
 elif args.net == 'convBigCIFAR10':
     net = convBigCIFAR10()
     pth_file = args.pth_file
-
-
 # else:  # custom net
-#     mo = importlib.import_module(args.net.replace('.py', ''))
-#     mo = getattr(mo, args.custom_class_name)
-#     net = mo()
+#     net = customNet()
 #     pth_file = args.pth_file
 
 print('file path:',file_path)
