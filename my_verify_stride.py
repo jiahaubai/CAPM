@@ -34,7 +34,9 @@ def get_args():
     parser.add_argument('--custom_class_name', default='', help='class name of the custom model', type=str)
     parser.add_argument('--pth_file', default='parameter/mnist_maxpool_best.pth', help='path to stored model', type=str)
     parser.add_argument('--epsilon', default=0.0, help='epsilon value of attack', type=float)
-    parser.add_argument('--data', default='mnist', choices=['mnist', 'cifar10', 'svhn'], help='mnist/cifar10/svhn', type=str)
+    parser.add_argument('--mean', nargs='+', help='mean value of dataset', type=float)
+    parser.add_argument('--std', nargs='+', help='std value of dataset', type=float)
+    parser.add_argument('--data', default='mnist', choices=['mnist', 'cifar10'], help='mnist/cifar10', type=str)
     parser.add_argument('-d', '--debug',  action = 'store_true')
     return parser.parse_args()
 
@@ -333,16 +335,42 @@ class convSuperCIFAR10(nn.Module):
 
 args = get_args()
 
+    
+
 N = 0
 
 if args.data == 'mnist':
     N = 28
     file_path = 'data/mnist_test.csv'
+    mean = (0.5, )
+    std = (0.5, )
+    if args.mean != None:
+        mean = tuple(args.mean)
+    if args.std != None:
+        std = tuple(args.std)
+    preprocess_mnist = transforms.Compose([
+        transforms.Normalize(mean, std) #--------------------------------------------
+    ])
     preprocess = preprocess_mnist
+# preprocess_cifar = transforms.Compose([
+#     transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)) # ------------------------
+# ])
+
+
 elif args.data == 'cifar10':
     N = 32
     file_path = 'data/cifar10_test.csv'
+    mean = (0.485, 0.456, 0.406)
+    std = (0.229, 0.224, 0.225)
+    if args.mean != None:
+        mean = tuple(args.mean)
+    if args.std != None:
+        std = tuple(args.std)
+    preprocess_cifar = transforms.Compose([
+        transforms.Normalize(mean, std) #--------------------------------------------
+    ])
     preprocess = preprocess_cifar
+
 elif args.data == 'svhn':
     print('XXX: not done yet')
     pass
