@@ -180,6 +180,40 @@ class convMed(nn.Module):
         x = self.main(x)
         return x
 
+class convBig(nn.Module):
+    def __init__(self):
+        super(convBig, self).__init__()
+        self.main = nn.Sequential(
+            nn.Conv2d(1, 32, 3, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(32, 32, 4, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(32, 64, 3, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(64, 64, 4, stride = 2, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            Flatten(),
+
+            nn.Linear(1024, 512), 
+            nn.ReLU(),
+
+            nn.Linear(512, 512),
+            nn.ReLU(),
+
+            nn.Linear(512, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
 
 class convSmallCIFAR10(nn.Module):
     def __init__(self):
@@ -202,6 +236,64 @@ class convSmallCIFAR10(nn.Module):
     def forward(self, x):
         x = self.main(x)
         return x
+
+
+class convMedCIFAR10(nn.Module):
+    def __init__(self):
+        super(convMedCIFAR10, self).__init__()
+        self.main = nn.Sequential(
+            nn.Conv2d(3, 16, 2, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(16, 32, 2, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            Flatten(),
+
+            nn.Linear(2048, 100), 
+            nn.ReLU(),
+            nn.Linear(100, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
+class convBigCIFAR10(nn.Module):
+    def __init__(self):
+        super(convBigCIFAR10, self).__init__()
+        self.main = nn.Sequential(
+            nn.Conv2d(3, 32, 3, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(32, 32, 4, stride = 1, padding = 1),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+
+            nn.Conv2d(32, 64, 3, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            nn.Conv2d(64, 64, 4, stride = 1, padding = 0),
+            nn.ReLU(),
+            nn.MaxPool2d(2, stride = 1),
+
+            Flatten(),
+
+            nn.Linear(4096, 512), 
+            nn.ReLU(),
+
+            nn.Linear(512, 512),
+            nn.ReLU(),
+
+            nn.Linear(512, 10)
+        )
+    def forward(self, x):
+        x = self.main(x)
+        return x
+
 
 class convSuperCIFAR10(nn.Module):
     def __init__(self):
@@ -275,9 +367,20 @@ elif args.net == 'convSmall':
 elif args.net == 'convMed':
     net = convMed()
     pth_file = args.pth_file
+elif args.net == 'convBig':
+    net = convBig()
+    pth_file = args.pth_file
 elif args.net == 'convSmallCIFAR10':
     net = convSmallCIFAR10()
     pth_file = args.pth_file
+elif args.net == 'convMedCIFAR10':
+    net = convMedCIFAR10()
+    pth_file = args.pth_file
+elif args.net == 'convBigCIFAR10':
+    net = convBigCIFAR10()
+    pth_file = args.pth_file
+
+
 # else:  # custom net
 #     mo = importlib.import_module(args.net.replace('.py', ''))
 #     mo = getattr(mo, args.custom_class_name)
