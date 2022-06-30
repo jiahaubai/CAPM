@@ -34,4 +34,4 @@ This repository is used for verifying the maxpool-based CNN.
 If you want to verify your net instaed of our default net, you should define your net in ```my_verify_stride.py``` before verifying part (start at ```line 333```), then load your net and pth file at `line 404`. Note that the net you input should follow this operation oder: ```conv``` >> ```ReLU``` >> ```maxpool``` in convolution part and ```linear``` >> ```ReLU``` in fully-connected part.
 
 ## Pretrained model and reproduce our work
-All model used in our paper is stored in `parameter/` folder. One can use `bash reproduce.sh` to reproduce our result in Table 6.
+All model used in our paper is stored in `parameter/` folder. One can use `bash reproduce.sh` to reproduce our result in Fig 11 convSmall CIFAR10 normal train's result.
