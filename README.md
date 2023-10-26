@@ -13,7 +13,7 @@ This repository is used for verifying the maxpool-based CNN.
   
 * These packages can be automatically installed by typing: 
   ```
-  pip3 install requirements.txt
+  pip3 install - r requirements.txt
   ```
 
 ## Usage
