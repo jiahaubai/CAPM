@@ -1,5 +1,17 @@
 # CAPM
-This repository is used for verifying the maxpool-based CNN.
+This repository is used to verify the maxpool-based CNN.
+
+**What's the adversarial attack?**: An image with a tiny noise, which cannot be figured out by the naked eye, that can mislead the identification of the machine. This is usually intentional by attackers.
+
+![image](https://github.com/jiahaubai/CAPM/blob/main/images/attck.png)
+
+**Verification** is a tool that can help users find the boundary of the worst accuracy under the adversarial attack!
+
+![image](https://github.com/jiahaubai/CAPM/blob/main/images/verification.png)
+
+**Result**: The results indicate that CAPM  outperforms DeepZ and DeepPoly in both precision and computational cost. It also demonstrates that our method is capable of achieving comparable verified bound as RefinePoly, but requires significantly less computational time.
+
+![image](https://github.com/jiahaubai/CAPM/blob/main/images/CNN_big.png)
 
 ## Requirements
 
