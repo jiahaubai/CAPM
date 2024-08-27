@@ -11,15 +11,15 @@ a few. However, these networks are vulnerable to malicious modification of the p
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/verification.png)
 
 ## Experiment
-We evaluate the verified robustness and average verified time of CAPM against DeepZ, DeepPoly, and PRIMA with l∞ norm-bounded perturbation of various budgets under various attack schemes, such as FGSM and PGD. All experiments are conducted on a 2.6 GHz 14 cores Intel(R) Xeon(R) CPU E5-2690 v4 with a main memory of 512 GB.
+We evaluate the verified robustness and average verified time of CAPM against [DeepZ](https://papers.nips.cc/paper_files/paper/2018/hash/f2f446980d8e971ef3da97af089481c3-Abstract.html), [DeepPoly](https://dl.acm.org/doi/10.1145/3290354), and [PRIMA](https://dl.acm.org/doi/abs/10.1145/3498704) with l∞ norm-bounded perturbation of various budgets under various attack schemes, such as [FGSM](https://arxiv.org/pdf/1412.6572) and [PGD](https://arxiv.org/abs/1706.06083). All experiments are conducted on a 2.6 GHz 14 cores Intel(R) Xeon(R) CPU E5-2690 v4 with a main memory of 512 GB.
 
 ### Setting
-- **Dataset**: We trained our models on MNIST and CIFAR10 datasets, where the images are normalized following the default setting in DeepPoly [24]. In MNIST, the mean and standard deviation are 0.5 and 0.5, respectively. In CIFAR 10, the mean and standard deviation of the RGB channels are (0.485, 0.456, 0.406) and (0.229, 0.224, 0.225), respectively.
-- **Architecture of neural networks**: Since there are no empirical verification results on maxpool-based CNNs, we add maxpool layers to common benchmark networks convSmall and convBig in [40]. We change the
+- **Dataset**: We trained our models on MNIST and CIFAR10 datasets, where the images are normalized following the default setting in DeepPoly. In MNIST, the mean and standard deviation are 0.5 and 0.5, respectively. In CIFAR 10, the mean and standard deviation of the RGB channels are (0.485, 0.456, 0.406) and (0.229, 0.224, 0.225), respectively.
+- **Architecture of neural networks**: Since there are no empirical verification results on maxpool-based CNNs, we add maxpool layers to common benchmark networks convSmall and convBig in [DiffAI](https://proceedings.mlr.press/v80/mirman18b/mirman18b.pdf). We change the
 parameters of striding and padding to achieve a similar number of parameters in the literature. **(put model architecture)**
 
 ### Result
-The results indicate that CAPM  outperforms DeepZ and DeepPoly in both precision and computational cost. It also demonstrates that our method is capable of achieving comparable verified bound as RefinePoly, but requires significantly less computational time.
+The results indicate that CAPM  outperforms DeepZ and DeepPoly in both precision and computational cost. It also demonstrates that our method is capable of achieving comparable verified bound as RefinePoly (PRIMA, SOTA in 2022), but requires significantly less computational time.
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/CNN_big.png)
 
