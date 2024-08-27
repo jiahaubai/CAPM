@@ -1,6 +1,7 @@
 # CAPM
 This repository is used to verify the maxpool-based CNN.
 
+## Introduction
 **Problem Statement**: In the past few years, convolution neural networks have reached unprecedented performance in various tasks such as face recognition and self-driving cars, to name
 a few. However, these networks are vulnerable to malicious modification of the pixels in input images, known as adversarial examples, such as FGSM, PGD, One Pixel Attack, Deepfool, EAD, GAP, MaF and many others. Because of the threat posed by adversarial examples, how to protect neural networks from being tricked by adversarial examples has become an emerging research topic. Therefore, the need for guaranteed robustness assessments has led to the developing of verification mechanisms for a neural network. These verify specific properties of neural networks, such as robustness against norm-bounded perturbation.  
 
@@ -11,18 +12,31 @@ a few. However, these networks are vulnerable to malicious modification of the p
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/verification.png)
 
 ## Experiment
-We evaluate the verified robustness and average verified time of CAPM against [DeepZ](https://papers.nips.cc/paper_files/paper/2018/hash/f2f446980d8e971ef3da97af089481c3-Abstract.html), [DeepPoly](https://dl.acm.org/doi/10.1145/3290354), and [PRIMA](https://dl.acm.org/doi/abs/10.1145/3498704) with l∞ norm-bounded perturbation of various budgets under various attack schemes, such as [FGSM](https://arxiv.org/pdf/1412.6572) and [PGD](https://arxiv.org/abs/1706.06083). All experiments are conducted on a 2.6 GHz 14 cores Intel(R) Xeon(R) CPU E5-2690 v4 with a main memory of 512 GB.
+We evaluate the verified robustness and average verified time of CAPM against [DeepZ](https://papers.nips.cc/paper_files/paper/2018/hash/f2f446980d8e971ef3da97af089481c3-Abstract.html), [DeepPoly](https://dl.acm.org/doi/10.1145/3290354), and [PRIMA(SOTA in 2022)](https://dl.acm.org/doi/abs/10.1145/3498704) with l∞ norm-bounded perturbation of various budgets under various attack schemes, such as [FGSM](https://arxiv.org/pdf/1412.6572) and [PGD](https://arxiv.org/abs/1706.06083). All experiments are conducted on a 2.6 GHz 14 cores Intel(R) Xeon(R) CPU E5-2690 v4 with a main memory of 512 GB.
 
-### Setting
+### Settings
 - **Dataset**: We trained our models on MNIST and CIFAR10 datasets, where the images are normalized following the default setting in DeepPoly. In MNIST, the mean and standard deviation are 0.5 and 0.5, respectively. In CIFAR 10, the mean and standard deviation of the RGB channels are (0.485, 0.456, 0.406) and (0.229, 0.224, 0.225), respectively.
+  
 - **Architecture of neural networks**: Since there are no empirical verification results on maxpool-based CNNs, we add maxpool layers to common benchmark networks convSmall and convBig in [DiffAI](https://proceedings.mlr.press/v80/mirman18b/mirman18b.pdf). We change the
-parameters of striding and padding to achieve a similar number of parameters in the literature. **(put model architecture)**
+parameters of striding and padding to achieve a similar number of parameters in the literature. CNNSmall is trained using the MNIST dataset, while CNNBig is trained using the CIFAR10 dataset. 
 
+![image](https://github.com/jiahaubai/CAPM/blob/main/images/net_architecture.png)
+  
+- **Performance metrics**: The performance of neural network verification is often evaluated through the following metrics,
+   - **verified robustness**: The number of images verified to be resilient to adversary example attack, divided by the total number of accurate 
+     images. This ratio indicates the analysis precision of a verifier when the neural network is applied to the test image dataset that 
+     encounters an adversarial example attack.
+   - **average verified time**: The total time spent by the verification algorithm on the verified images divided by the total number of images.
 ### Result
-The results indicate that CAPM  outperforms DeepZ and DeepPoly in both precision and computational cost. It also demonstrates that our method is capable of achieving comparable verified bound as RefinePoly (PRIMA, SOTA in 2022), but requires significantly less computational time.
+* CNNSmall
+![image](https://github.com/jiahaubai/CAPM/blob/main/images/CNN_small.png)
+CAPM can achieve comparable validation bounds to RefinePoly but with significantly less computational time. Specifically, when epsilon is 0.09, CAPM is 40 times faster than RefinePoly(PRIMA).
 
+* CNNBig
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/CNN_big.png)
+CAPM outperforms DeepZ, DeepPoly, and RefinePoly(PRIMA) in both precision and computation cost.
 
+More detailed settings and results are currently being submitted and will not be made public.
 ## Requirements
 
 * python version 3.8.5
