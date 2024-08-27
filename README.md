@@ -1,11 +1,12 @@
 # CAPM
 This repository is used to verify the maxpool-based CNN.
 
-**What's the adversarial attack?**: An image with a tiny noise, which cannot be figured out by the naked eye, that can mislead the identification of the machine. This is usually intentional by attackers.
+**Problem Statement**: In the past few years, convolution neural networks have reached unprecedented performance in various tasks such as face recognition and self-driving cars, to name
+a few. However, these networks are vulnerable to malicious modification of the pixels in input images, known as adversarial examples, such as FGSM, PGD, One Pixel Attack, Deepfool, EAD, GAP, MaF and many others. Because of the threat posed by adversarial examples, how to protect neural networks from being tricked by adversarial examples has become an emerging research topic. Therefore, the need for guaranteed robustness assessments has led to the developing of verification mechanisms for a neural network. These verify specific properties of neural networks, such as robustness against norm-bounded perturbation.  
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/attck.png)
 
-**Verification** is a tool that can help users find the boundary of the worst accuracy under the adversarial attack!
+**CAPM** (Convex Adversarial Polytope for Maxpool-based CNN) yields the verified bound for a Maxpool-based CNN, assuming l∞ norm-bounded input perturbations.
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/verification.png)
 
