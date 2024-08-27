@@ -7,7 +7,7 @@ a few. However, these networks are vulnerable to malicious modification of the p
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/attck.png)
 
-**CAPM** (Convex Adversarial Polytope for Maxpool-based CNN) yields the verified bound for a Maxpool-based CNN, assuming l∞ norm-bounded input perturbations.
+**CAPM** (Convex Adversarial Polytope for Maxpool-based CNN) is a verification tool that provides verified bounds for a Maxpool-based CNN, assuming l∞ norm-bounded input perturbations.
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/verification.png)
 
