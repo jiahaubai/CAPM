@@ -1,9 +1,9 @@
 # CAPM
-This repository is used to verify the maxpool-based CNN.
+This repository contains the implementation of our paper: ["CAPM: Fast and Robust Verification on Maxpool-based CNN via Dual Network"](https://arxiv.org/pdf/2407.09550), accepted at the VerifAI Workshop, ICLR 2025 (Singapore, April 2025).
 
 ## Introduction
-**Problem Statement**: In the past few years, convolution neural networks have reached unprecedented performance in various tasks such as face recognition and self-driving cars, to name
-a few. However, these networks are vulnerable to malicious modification of the pixels in input images, known as adversarial examples, such as FGSM, PGD, One Pixel Attack, Deepfool, EAD, GAP, MaF and many others. Because of the threat posed by adversarial examples, how to protect neural networks from being tricked by adversarial examples has become an emerging research topic. Therefore, the need for guaranteed robustness assessments has led to the developing of verification mechanisms for a neural network. These verify specific properties of neural networks, such as robustness against norm-bounded perturbation.  
+**Problem Statement**: In the past few years, convolutional neural networks have reached unprecedented performance in various tasks such as face recognition and self-driving cars, to name
+a few. However, these networks are vulnerable to malicious modification of the pixels in input images, known as adversarial examples, such as FGSM, PGD, One Pixel Attack, Deepfool, EAD, GAP, MaF, and many others. Due to the threat posed by adversarial examples, protecting neural networks from being tricked by them has become an emerging research topic. Therefore, the need for guaranteed robustness assessments has led to the development of verification mechanisms for a neural network. These verify specific properties of neural networks, such as robustness against norm-bounded perturbations.  
 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/attck.png)
 
@@ -23,7 +23,7 @@ parameters of striding and padding to achieve a similar number of parameters in 
 ![image](https://github.com/jiahaubai/CAPM/blob/main/images/net_architecture.png)
   
 - **Performance metrics**: The performance of neural network verification is often evaluated through the following metrics,
-   - **verified robustness**: The number of images verified to be resilient to adversary example attack, divided by the total number of accurate 
+   - **verified robustness**: The number of images verified to be resilient to an adversary example attack, divided by the total number of accurate 
      images. This ratio indicates the analysis precision of a verifier when the neural network is applied to the test image dataset that 
      encounters an adversarial example attack.
    - **average verified time**: The total time spent by the verification algorithm on the verified images divided by the total number of images.
